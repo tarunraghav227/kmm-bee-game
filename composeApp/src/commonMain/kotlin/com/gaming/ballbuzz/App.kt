@@ -74,7 +74,7 @@ import org.jetbrains.compose.resources.imageResource
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
-const val BEE_FRAME_SIZE = 80
+const val BALL_FRAME_SIZE = 80
 const val PIPE_CAP_HEIGHT = 50F
 
 @Composable
@@ -95,8 +95,8 @@ fun App() {
             SpriteSpec(
                 screenWidth = screenWidth.toFloat(),
                 default = SpriteSheet(
-                    frameWidth = BEE_FRAME_SIZE,
-                    frameHeight = BEE_FRAME_SIZE,
+                    frameWidth = BALL_FRAME_SIZE,
+                    frameHeight = BALL_FRAME_SIZE,
                     image = Res.drawable.bee_sprite
                 )
             )
@@ -106,7 +106,7 @@ fun App() {
         val sheetImage = spriteSpec.imageBitmap
         val animatedAngle by animateFloatAsState(
             targetValue = when {
-                game.beeVelocity > game.beeMaxVelocity / 1.1 -> 30f
+                game.ballVelocity > game.ballMaxVelocity / 1.1 -> 30f
                 else -> 0f
             }
         )
@@ -223,8 +223,8 @@ fun App() {
             rotate(
                 degrees = animatedAngle,
                 pivot = Offset(
-                    x = game.bee.x - game.beeRadius,
-                    y = game.bee.y - game.beeRadius
+                    x = game.ball.x - game.ballRadius,
+                    y = game.ball.y - game.ballRadius
                 )
             ) {
                 drawSpriteView(
@@ -233,8 +233,8 @@ fun App() {
                     currentFrame = currentFrame,
                     image = sheetImage,
                     offset = IntOffset(
-                        x = (game.bee.x - game.beeRadius).toInt(),
-                        y = (game.bee.y - game.beeRadius).toInt()
+                        x = (game.ball.x - game.ballRadius).toInt(),
+                        y = (game.ball.y - game.ballRadius).toInt()
                     )
                 )
             }

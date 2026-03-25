@@ -17,9 +17,9 @@ data class Game(
     val screenWidth: Int = 0,
     val screenHeight: Int = 0,
     val gravity: Float = if (platform == Platform.Android) 0.8f else if (platform == Platform.iOS) 0.8f else 0.25f,
-    val beeRadius: Float = 30f,
-    val beeJumpImpulse: Float = if (platform == Platform.Android) -12f else if (platform == Platform.iOS) -12f else -8f,
-    val beeMaxVelocity: Float = if (platform == Platform.Android) 25f else if(platform == Platform.iOS) 20f else 20f,
+    val ballRadius: Float = 30f,
+    val ballJumpImpulse: Float = if (platform == Platform.Android) -12f else if (platform == Platform.iOS) -12f else -8f,
+    val ballMaxVelocity: Float = if (platform == Platform.Android) 25f else if(platform == Platform.iOS) 20f else 20f,
     val pipeWidth: Float = 150f,
     val pipeVelocity: Float = if (platform == Platform.Android) 5f else if(platform == Platform.iOS) 7f else 2.5f,
     val pipeGapSize: Float = if (platform == Platform.Android) 250f else 300f
@@ -28,13 +28,13 @@ data class Game(
     private val settings: ObservableSettings by inject()
     var status by mutableStateOf(GameStatus.Idle)
         private set
-    var beeVelocity by mutableStateOf(0f)
+    var ballVelocity by mutableStateOf(0f)
         private set
-    var bee by mutableStateOf(
-        Bee(
+    var ball by mutableStateOf(
+        Ball(
             x = (screenWidth / 4).toFloat(),
             y = (screenHeight / 2).toFloat(),
-            radius = beeRadius
+            radius = ballRadius
         )
     )
         private set
@@ -78,22 +78,22 @@ data class Game(
     }
 
     fun jump() {
-        beeVelocity = beeJumpImpulse
+        ballVelocity = ballJumpImpulse
         audioPlayer.playJumpSound()
         isFallingSoundPlayed = false
     }
 
     fun restart() {
-        resetBeePosition()
+        resetballPosition()
         removePipes()
         resetScore()
         start()
         isFallingSoundPlayed = false
     }
 
-    private fun resetBeePosition() {
-        bee = bee.copy(y = (screenHeight / 2).toFloat())
-        beeVelocity = 0f
+    private fun resetballPosition() {
+        ball = ball.copy(y = (screenHeight / 2).toFloat())
+        ballVelocity = 0f
     }
 
     private fun removePipes() {
@@ -111,26 +111,26 @@ data class Game(
                 return
             }
 
-            if (!pipePair.scored && bee.x > pipePair.x + pipeWidth / 2) {
+            if (!pipePair.scored && ball.x > pipePair.x + pipeWidth / 2) {
                 pipePair.scored = true
                 currentScore += 1
             }
         }
 
-        if (bee.y < 0) {
-            stopTheBee()
+        if (ball.y < 0) {
+            stopTheball()
             return
-        } else if (bee.y > screenHeight) {
+        } else if (ball.y > screenHeight) {
             gameOver()
             return
         }
 
-        beeVelocity = (beeVelocity + gravity)
-            .coerceIn(-beeMaxVelocity, beeMaxVelocity)
-        bee = bee.copy(y = bee.y + beeVelocity)
+        ballVelocity = (ballVelocity + gravity)
+            .coerceIn(-ballMaxVelocity, ballMaxVelocity)
+        ball = ball.copy(y = ball.y + ballVelocity)
 
         // When to play the falling sound
-        if (beeVelocity > (beeMaxVelocity / 1.1)) {
+        if (ballVelocity > (ballMaxVelocity / 1.1)) {
             if (!isFallingSoundPlayed) {
                 audioPlayer.playFallingSound()
                 isFallingSoundPlayed = true
@@ -163,28 +163,28 @@ data class Game(
     }
 
     private fun isCollision(pipePair: PipePair): Boolean {
-        // Check horizontal collision. Bee overlaps the Pipe's X range.
-        val beeRightEdge = bee.x + bee.radius
-        val beeLeftEdge = bee.x - bee.radius
+        // Check horizontal collision. ball overlaps the Pipe's X range.
+        val ballRightEdge = ball.x + ball.radius
+        val ballLeftEdge = ball.x - ball.radius
         val pipeLeftEdge = pipePair.x - pipeWidth / 2
         val pipeRightEdge = pipePair.x + pipeWidth / 2
-        val horizontalCollision = beeRightEdge > pipeLeftEdge
-                && beeLeftEdge < pipeRightEdge
+        val horizontalCollision = ballRightEdge > pipeLeftEdge
+                && ballLeftEdge < pipeRightEdge
 
-        // Check if bee is within the vertical gap.
-        val beeTopEdge = bee.y - bee.radius
-        val beeBottomEdge = bee.y + bee.radius
+        // Check if ball is within the vertical gap.
+        val ballTopEdge = ball.y - ball.radius
+        val ballBottomEdge = ball.y + ball.radius
         val gapTopEdge = pipePair.y - pipeGapSize / 2
         val gapBottomEdge = pipePair.y + pipeGapSize / 2
-        val beeInGap = beeTopEdge > gapTopEdge
-                && beeBottomEdge < gapBottomEdge
+        val ballInGap = ballTopEdge > gapTopEdge
+                && ballBottomEdge < gapBottomEdge
 
-        return horizontalCollision && !beeInGap
+        return horizontalCollision && !ballInGap
     }
 
-    private fun stopTheBee() {
-        beeVelocity = 0f
-        bee = bee.copy(y = 0f)
+    private fun stopTheball() {
+        ballVelocity = 0f
+        ball = ball.copy(y = 0f)
     }
 
     fun cleanup() {
